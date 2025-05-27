@@ -71,7 +71,7 @@ app.post('/api/onboarding', async (req, res) => {
     const recordId = queryRes.data.records[0].Id;
 
     const updatePayload = {
-      Account__c: data.companyName,
+      Company_Name__c: data.companyName,
       Is_Incorporated__c: convertYesNoToBoolean(data.isIncorporated),
       Incorporation_Date__c: data.incorporationDate,
       Trading_Activity__c: data.tradingActivity,
