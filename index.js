@@ -8,19 +8,25 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-const PORT =  process.env.PORT || 5000;
-;
-// Helper function to convert yes/no strings to boolean
+// ✅ Use dynamic port for Heroku or fallback to 5000 locally
+const PORT = process.env.PORT || 5000;
+
+// ✅ Optional sanity route
+app.get('/', (req, res) => {
+  res.send('Backend is running 🚀');
+});
+
+// ✅ Helper: Convert yes/no strings to booleans
 function convertYesNoToBoolean(value) {
   if (typeof value === 'string') {
     const lowerValue = value.toLowerCase().trim();
     if (lowerValue === 'yes' || lowerValue === 'y') return true;
     if (lowerValue === 'no' || lowerValue === 'n') return false;
   }
-  // If it's already a boolean or other type, return as-is
   return value;
 }
-// Salesforce token fetcher
+
+// ✅ Salesforce token fetcher
 async function getAccessToken() {
   const params = new URLSearchParams();
   params.append('grant_type', 'password');
@@ -41,14 +47,13 @@ async function getAccessToken() {
   }
 }
 
+// ✅ Main POST route
 app.post('/api/onboarding', async (req, res) => {
   const data = req.body;
 
   try {
-    // Step 1: Login to Salesforce
     const { access_token, instance_url } = await getAccessToken();
 
-    // Step 2: Query onboarding form by Name
     const query = `SELECT Id FROM Onboarding_Form__c WHERE Name = '${data.id}' LIMIT 1`;
     const queryRes = await axios.get(
       `${instance_url}/services/data/v58.0/query?q=${encodeURIComponent(query)}`,
@@ -65,7 +70,7 @@ app.post('/api/onboarding', async (req, res) => {
 
     const recordId = queryRes.data.records[0].Id;
 
-  const updatePayload = {
+    const updatePayload = {
       Account__c: data.companyName,
       Is_Incorporated__c: convertYesNoToBoolean(data.isIncorporated),
       Incorporation_Date__c: data.incorporationDate,
@@ -153,7 +158,6 @@ app.post('/api/onboarding', async (req, res) => {
       Additional_Contact4_Email__c: data.additionalContact4Email
     };
 
-    // Step 4: Patch update
     await axios.patch(
       `${instance_url}/services/data/v58.0/sobjects/Onboarding_Form__c/${recordId}`,
       updatePayload,
@@ -174,6 +178,8 @@ app.post('/api/onboarding', async (req, res) => {
   }
 });
 
+// ✅ Start server
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(`🚀 Server running on ${PORT}`);
 });
+
