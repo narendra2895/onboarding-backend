@@ -8,7 +8,8 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-const PORT = 5000;
+const PORT =  process.env.PORT || 5000;
+;
 // Helper function to convert yes/no strings to boolean
 function convertYesNoToBoolean(value) {
   if (typeof value === 'string') {
